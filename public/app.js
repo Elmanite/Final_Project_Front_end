@@ -9,20 +9,20 @@ app.controller('mainController', ['$http', function($http) {
     const controller = this;
     const edit_form = false;
 
-    // localStorage.clear('token');
-
-
-    //read all the Blogs -- /blogs GET index
-    //anyone can do this!!!
     this.getHampsters = function (){
       $http({
         method: 'GET',
-        url: this.URL + '/hampsters'
-        // url: this.herokuURL
+        url: this.URL + '/hampsters',
+        headers: {
+          Authorization: 'Bearer' + JSON.parse(localStorage.getItem('token'))
+        }
       }).then(function(result) {
           console.log('hampsters from api: ', result);
+          if(result.data.status == 401){
+            this.error = 'Unauthorized';
+          }else {
           this.hampsters = result.data;
-          // this.logout();
+          }
       }.bind(this), function(error) {
           console.log(error);
       });
@@ -31,12 +31,13 @@ app.controller('mainController', ['$http', function($http) {
     // Login User to get JWT Token for
     // post - update - delete
     this.login = function(userLogin) {
-      console.log('The userLogin.username & userLogin.password ' + userLogin.username + ' : ' + userLogin.password)
+      // console.log('The userLogin.username & userLogin.password ' + userLogin.username + ' : ' + userLogin.password)
       this.userLogin = userLogin;
+      console.log(userLogin);
       $http({
           method: 'POST',
           url: this.URL + '/users/login',
-          data: { username: userLogin.username, password: userLogin.password },
+          data: {user: { username: userLogin.username, password: userLogin.password }},
         }).then(function(response) {
           console.log(response);
           this.user = response.data.user;
@@ -87,7 +88,7 @@ app.controller('mainController', ['$http', function($http) {
     }
 
 
-    this.processForm = () => {
+    this.createHampster = () => {
       console.log('process form is running');
       console.log('here is the form data: ', this.formData);
       $http({

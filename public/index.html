@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
     <script src="/app.js" type="text/javascript"></script>
     <title></title>
@@ -19,12 +18,25 @@
           <input type="text" ng-model="userLogin.password" placeholder="password"/>
           <input type="submit" value="Login"/>
         </form>
-        <form class="" action="index.html" method="post">
-
+        <form class="registerform" ng-submit="ctrl.register(userRegister)">
+          <input type="text" ng-model="userRegister.username" placeholder="username"/>
+          <input type="text" ng-model="userRegister.password" placeholder="password"/>
+          <input type="submit" value="Register"/>
+        </form>
+        <form class="createHampster" ng-submit="ctrl.createHampster">
+          <input type="text" ng-model="createHampster.name" placeholder="name"/>
+          <input type="text" ng-model="createHampster.color" placeholder="color"/>
+          <input type="submit" value="Register"/>
         </form>
       </div>
       <div class="content">
-
+        <a href="#"ng-click="ctrl.logout()">Log Out</a>
+        <p>Logged in username: {{ctrl.user.username}}</p>
+        <h4 ng-click="ctrl.getHampsters()">Click to see hampsters</h4>
+        <div class="error">{{ctrl.error}}</div>
+        <div ng-repeat="user in ctrl.users">
+          <h1>{{user.username}}</h1>
+        </div>
       </div>
     </main>
     <footer></footer>
