@@ -1,174 +1,135 @@
 const app = angular.module('hamhero_app', []);
 app.controller('mainController', ['$http', function($http) {
-
-    this.message= "Hello from ANGULAR!"
-    this.hampsters = [];
-
     this.URL = 'http://localhost:3000';
-    this.formData = {};
+    this.hamsters = [];
+    this.newHamster = {};
+    this.updateHamster = {};
+    this.user = {};
+    this.registerForm = false;
+    this.loginForm = false;
+    this.deleteUserButton = false;
     const controller = this;
     const edit_form = false;
 
-    this.getHampsters = function (){
-      $http({
-        method: 'GET',
-        url: this.URL + '/hampsters',
-        headers: {
-          Authorization: 'Bearer' + JSON.parse(localStorage.getItem('token'))
-        }
-      }).then(function(result) {
-          console.log('hampsters from api: ', result);
-          if(result.data.status == 401){
-            this.error = 'Unauthorized';
-          }else {
-          this.hampsters = result.data;
-          }
-      }.bind(this), function(error) {
-          console.log(error);
-      });
-    }
-
-    // Login User to get JWT Token for
-    // post - update - delete
     this.login = function(userLogin) {
-      // console.log('The userLogin.username & userLogin.password ' + userLogin.username + ' : ' + userLogin.password)
       this.userLogin = userLogin;
-      console.log(userLogin);
+      console.log("User Logging in", userLogin);
       $http({
           method: 'POST',
           url: this.URL + '/users/login',
-          data: {user: { username: userLogin.username, password: userLogin.password }},
+          data: { username: userLogin.username, password: userLogin.password }
         }).then(function(response) {
           console.log(response);
           this.user = response.data.user;
           localStorage.setItem('token', JSON.stringify(response.data.token));
+          // this.getHamsters();
         }.bind(this));
     }
-
+    //Allows an unregistered user to register
     this.register = function(userRegister) {
-      console.log('The userRegister.username & userRegister.password ' + userRegister.username + ' : ' + userRegister.password)
+      console.log("User registering");
       this.userRegister = userRegister;
       $http({
           method: 'POST',
           url: this.URL + '/users',
-          data: { username: userRegister.username, password: userRegister.password },
+          data: { username: userRegister.username, password: userRegister.password }
         }).then(function(response) {
           console.log(response);
           this.user = response.data.user;
           localStorage.setItem('token', JSON.stringify(response.data.token));
         }.bind(this));
     }
-
-    // List the users as an Index
-    // only logged in users see the users index
-    // this.users = function() {
-    //   console.log('/USERS called')
-    //   $http({
-    //     method: 'GET',
-    //     url: this.URL + '/users',
-    //     headers: {
-    //       Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
-    //     }
-    //   }).then(function(response) {
-    //       console.log('users from api: ', response);
-    //       if (response.data.status == 401) {
-    //         this.error = "Unauthorized";
-    //       } else {
-    //         this.users = response.data.user;
-    //       }
-    //   }.bind(this), function(error) {
-    //       console.log('GET /users ERROR ' + error);
-    //   }.bind(this));
-    // }
-
     //Logout current user and delete JWT Token
     this.logout = function() {
       localStorage.clear('token');
       location.reload();
     }
-
-
-    this.createHampster = () => {
-      console.log('process form is running');
-      console.log('here is the form data: ', this.formData);
+    this.getHamsters = function (){
+      console.log("getting list of hampsters");
+      $http({
+        method: 'GET',
+        url: this.URL + "/users/" + this.user.id + '/hamsters',
+        headers: {
+          Authorization: 'Bearer' + JSON.parse(localStorage.getItem('token'))
+        }
+      }).then(function(result) {
+          console.log('hamsters from api: ', result);
+          if(result.data.status == 401){
+            this.error = 'Unauthorized';
+          }else {
+          this.hamsters = result.data;
+          console.log('result data', result.data);
+          }
+      }.bind(this), function(error) {
+          console.log(error);
+      });
+    }
+    this.createHamster = () => {
+      console.log('Creating new hamster', this.newHamster);
       $http({
         method: 'POST',
-        url: this.URL + '/hampsters',
-        data: this.formData,
+        url: this.URL + "/users/" + this.user.id + '/hamsters',
+        data: this.newHamster,
         headers: {
           Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
         }
       }).then(function(response){
-        console.log(response);
-        this.hampsters.unshift(response.data);
+        console.log("new hamster response", response);
+        this.hamsters.unshift(response.data);
       }.bind(this), function(error) {
         console.log(error);
     });
 
     }
 
-    this.deleteHampster = function(hampster){
-      console.log('this is my hampster id', hampster.id);
+    this.deleteHamster = function(hamster){
+      console.log('deleting hamster id', hamster.id);
       $http({
         method: 'DELETE',
-        url: this.URL + '/hampsters/' + hampster.id,
+        url: this.URL + '/users/' + this.user.id + '/hamsters/' + hamster.id,
         headers: {
           Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
         }
       }).then(
         function(response){
-          controller.getHampsters();
+          controller.getHamsters();
         },
         function (){
         }
-
       );
     }
-
-    this.showHampsterOwner = function (user_id) {
-        console.log("showHampsterOwner clicked for user ", user_id);
+    this.editHamster = function (hamster) {
+      console.log('Edit hamster called!')
+      console.log('hamster.id ', hamster.id)
+      $http({
+        method: 'PUT',
+        url: this.URL + '/users/' + this.user.id + '/hamsters/' + hamster.id,
+        data: this.updateHamster,
+        headers: {
+          Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
+        }
+      }).then(function(response){
+          console.log("Edit hamster response data", response.data)
+          this.updateHamster = response.data;
+        }, function(error) {
+            console.log(error);
+        });
+      // hide the form
+      controller.edit_form = false;
+    };
+    this.showHamsterOwner = function (user_id) {
+        console.log("showHamsterOwner clicked for user ", user_id);
         $http({
           method: 'GET',
-          url: this.URL + '/hampsters/' + user_id,
+          url: this.URL + '/hamsters/' + user_id,
           headers: {
             Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
           }
         }).then(function(response){
             console.log(response.data)
-            this.hampsters = response.data;
+            this.hamsters = response.data;
           }.bind(this), function(error) {
               console.log(error);
           });
     };
-
-    this.editHampster = function (hampster) {
-      console.log('Edit hampster called!')
-      console.log('hampster.id ', hampster.id)
-
-      // console.log('this.editForm.name ', this.editForm.name)
-      // console.log('this.editForm.color ', this.editForm.color)
-      // console.log('this.editForm.victory_points ', this.editForm.victory_points)
-
-      $http({
-        method: 'PUT',
-        url: this.URL + '/hampsters/' + hampster.id,
-        data: this.editForm,
-        headers: {
-          Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
-        }
-      }).then(function(response){
-          console.log(response.data)
-          // this.hampsters = response.data;
-          controller.getHampsters();
-        }, function(error) {
-            console.log(error);
-        });
-
-      // hide the form
-      controller.edit_form = false;
-    };
-
-
-    // show the index of all the hampsters on the initial page
-    this.getHampsters();
   }]);
