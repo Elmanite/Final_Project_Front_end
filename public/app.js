@@ -1,6 +1,6 @@
 const app = angular.module('hamhero_app', []);
 app.controller('mainController', ['$http', function($http) {
-    this.URL = 'http://localhost:3000';
+    this.URL = 'https://git.heroku.com/hamsterheroes.git';
     this.hamsters = [];
     this.newHamster = {};
     this.user = {};
