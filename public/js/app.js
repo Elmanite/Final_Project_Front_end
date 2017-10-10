@@ -3,11 +3,10 @@ app.controller('mainController', ['$http', function($http) {
     this.URL = 'http://localhost:3000';
     this.hamsters = [];
     this.newHamster = {};
-    this.updateHamster = {};
     this.user = {};
-    this.registerForm = false;
-    this.loginForm = false;
-    this.deleteUserButton = false;
+    // this.registerForm = false;
+    // this.loginForm = false;
+    // this.deleteUserButton = false;
     const controller = this;
     const edit_form = false;
 
@@ -98,24 +97,24 @@ app.controller('mainController', ['$http', function($http) {
         }
       );
     }
-    this.editHamster = function (hamster) {
-      console.log('Edit hamster called!')
-      console.log('hamster.id ', hamster.id)
+    this.editHamster = function (ham) {
+      console.log('Edit hamster called!');
+      console.log('hamster id ', ham);
       $http({
         method: 'PUT',
-        url: this.URL + '/users/' + this.user.id + '/hamsters/' + hamster.id,
-        data: this.updateHamster,
         headers: {
           Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
-        }
+        },
+        data: {hamster: {name: ham.name, color: ham.color, victory_points: ham.victory_points}},
+        url: this.URL + '/users/' + this.user.id + '/hamsters/' + ham.id
       }).then(function(response){
           console.log("Edit hamster response data", response.data)
-          this.updateHamster = response.data;
+          controller.ham = response.data;
         }, function(error) {
-            console.log(error);
+            console.log("getting error instead of update", error);
         });
       // hide the form
-      controller.edit_form = false;
+      // controller.edit_form = false;
     };
     this.showHamsterOwner = function (user_id) {
         console.log("showHamsterOwner clicked for user ", user_id);
